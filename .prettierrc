@@ -1,13 +1,21 @@
 {
+    "arrowParens": "always",
     "singleQuote": true,
-    "printWidth": 80,
-    "editor.formatOnSave": true,
-    "proseWrap": "always",
+    "bracketSpacing": false,
+    "trailingComma": "all",
     "tabWidth": 4,
-    "requireConfig": false,
-    "useTabs": false,
-    "trailingComma": "none",
-    "bracketSpacing": true,
-    "jsxBracketSameLine": false,
-    "semi": true
+    "printWidth": 120,
+    "overrides": [
+        {
+            "files": "*.sol",
+            "options": {
+                "printWidth": 120,
+                "tabWidth": 4,
+                "useTabs": false,
+                "singleQuote": false,
+                "bracketSpacing": false,
+                "explicitTypes": "always"
+            }
+        }
+    ]
 }

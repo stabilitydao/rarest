@@ -4,6 +4,8 @@
   "scripts": {
     "build": "hardhat compile",
     "console": "hardhat console",
+    "deploy:hardhat": "hardhat run scripts/deploy.ts",
+    "deploy:ropsten": "hardhat run scripts/deploy.ts --network ropsten",
     "clean": "hardhat clean",
     "test": "hardhat test",
     "lint": "solhint 'contracts/**/*.sol' && prettier --write .",
