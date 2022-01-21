@@ -41,9 +41,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "ERC1155Market",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC1155Market__factory>;
+    getContractFactory(
       name: "ERC2981Royalties",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC2981Royalties__factory>;
+    getContractFactory(
+      name: "IRarestNft",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IRarestNft__factory>;
     getContractFactory(
       name: "RarestNft",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -85,10 +93,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "ERC1155Market",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC1155Market>;
+    getContractAt(
       name: "ERC2981Royalties",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC2981Royalties>;
+    getContractAt(
+      name: "IRarestNft",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IRarestNft>;
     getContractAt(
       name: "RarestNft",
       address: string,

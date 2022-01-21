@@ -1,18 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
-import '@openzeppelin/contracts/utils/Counters.sol';
-import './ERC2981Royalties.sol';
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "./ERC2981Royalties.sol";
 
 contract RarestNft is ERC1155, ERC2981Royalties {
     using Counters for Counters.Counter;
+
+    //TokenId of every NFT
     Counters.Counter private _tokenIds;
+
+    //NFT marketplace address should be approved
     address public marketAddress;
-    string public baseURI = 'https://gateway.pinata.cloud/ipfs/';
+
+    //IPFS gateway
+    string public baseURI = "https://gateway.pinata.cloud/ipfs/";
     mapping(uint256 => string) private _hashes;
 
-    constructor(address marketAddress_) ERC1155('') {
+    //Provide marketplace
+    constructor(address marketAddress_) ERC1155("") {
         marketAddress = marketAddress_;
     }
 
@@ -43,10 +50,7 @@ contract RarestNft is ERC1155, ERC2981Royalties {
         address[] memory royaltyRecipients,
         uint256[] memory royaltyPercents
     ) public returns (uint256[] memory) {
-        require(
-            amounts.length == hashes.length,
-            'amount must be equal to hash'
-        );
+        require(amounts.length == hashes.length, "amount must be equal to hash");
         uint256[] memory ids = new uint256[](amounts.length);
         for (uint256 i = 0; i < amounts.length; i++) {
             _tokenIds.increment();
@@ -54,11 +58,7 @@ contract RarestNft is ERC1155, ERC2981Royalties {
             _hashes[newTokenId] = hashes[i];
             ids[i] = newTokenId;
             if (royaltyPercents[i] > 0) {
-                _setTokenRoyalty(
-                    newTokenId,
-                    royaltyRecipients[i],
-                    royaltyPercents[i]
-                );
+                _setTokenRoyalty(newTokenId, royaltyRecipients[i], royaltyPercents[i]);
             }
         }
         _mintBatch(recipient, ids, amounts, data);

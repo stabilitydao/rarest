@@ -8,7 +8,9 @@ export type { IERC1155 } from "./IERC1155";
 export type { IERC1155Receiver } from "./IERC1155Receiver";
 export type { ERC165 } from "./ERC165";
 export type { IERC165 } from "./IERC165";
+export type { ERC1155Market } from "./ERC1155Market";
 export type { ERC2981Royalties } from "./ERC2981Royalties";
+export type { IRarestNft } from "./IRarestNft";
 export type { RarestNft } from "./RarestNft";
 
 export { IERC2981__factory } from "./factories/IERC2981__factory";
@@ -18,5 +20,7 @@ export { IERC1155__factory } from "./factories/IERC1155__factory";
 export { IERC1155Receiver__factory } from "./factories/IERC1155Receiver__factory";
 export { ERC165__factory } from "./factories/ERC165__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";
+export { ERC1155Market__factory } from "./factories/ERC1155Market__factory";
 export { ERC2981Royalties__factory } from "./factories/ERC2981Royalties__factory";
+export { IRarestNft__factory } from "./factories/IRarestNft__factory";
 export { RarestNft__factory } from "./factories/RarestNft__factory";

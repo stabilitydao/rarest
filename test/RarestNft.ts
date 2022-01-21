@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
-import {Contract} from 'ethers';
+import {RarestNft} from '../typechain-types';
 describe('RarestNft', async () => {
-    let rarestnft: Contract;
+    let rarestnft: RarestNft;
     let marketAddress: string = '0x18B820C66704AD3507AF3fbE1634cCC67EcdE49d';
     let rarestAddress: string;
     const baseURI: string = 'https://gateway.pinata.cloud/ipfs/';
@@ -19,7 +19,7 @@ describe('RarestNft', async () => {
         expect(rarestAddress).to.be.not.null;
     });
 
-    it('CreateNFT and get', async () => {
+    it('CreateNFT and getting balance', async () => {
         let [recipient]: string[] = await ethers.provider.listAccounts();
         let amount: number = 20;
         let hash: string = '0xRajkumar';
@@ -74,9 +74,9 @@ describe('RarestNft', async () => {
             royaltyRecipient,
             royaltyPercent,
         );
-        const Id = await returnTokenID.wait();
-        const tokenId = parseInt(Id.events[1].data, 16);
-        const uri = await rarestnft.uri(tokenId);
+        const Id: any = await returnTokenID.wait();
+        const tokenId: number = parseInt(Id.events[1].data, 16);
+        const uri: string = await rarestnft.uri(tokenId);
         expect(uri).to.equal(baseURI + hash);
     });
 });
