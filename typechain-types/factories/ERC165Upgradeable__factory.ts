@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { ERC165, ERC165Interface } from "../ERC165";
+import type {
+  ERC165Upgradeable,
+  ERC165UpgradeableInterface,
+} from "../ERC165Upgradeable";
 
 const _abi = [
   {
@@ -28,12 +31,15 @@ const _abi = [
   },
 ];
 
-export class ERC165__factory {
+export class ERC165Upgradeable__factory {
   static readonly abi = _abi;
-  static createInterface(): ERC165Interface {
-    return new utils.Interface(_abi) as ERC165Interface;
+  static createInterface(): ERC165UpgradeableInterface {
+    return new utils.Interface(_abi) as ERC165UpgradeableInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): ERC165 {
-    return new Contract(address, _abi, signerOrProvider) as ERC165;
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): ERC165Upgradeable {
+    return new Contract(address, _abi, signerOrProvider) as ERC165Upgradeable;
   }
 }

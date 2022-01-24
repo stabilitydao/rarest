@@ -1,15 +1,18 @@
 import {expect} from 'chai';
-import {ethers} from 'hardhat';
-import {RarestNft} from '../typechain-types';
+import {ethers, upgrades} from 'hardhat';
+import {RarestNft, RarestNft__factory} from '../typechain-types';
 describe('RarestNft', async () => {
     let rarestnft: RarestNft;
     let marketAddress: string = '0x18B820C66704AD3507AF3fbE1634cCC67EcdE49d';
     let rarestAddress: string;
     const baseURI: string = 'https://gateway.pinata.cloud/ipfs/';
-
     beforeEach(async () => {
-        const RarestNFT = await ethers.getContractFactory('RarestNft');
-        rarestnft = await RarestNFT.deploy(marketAddress);
+        const [deployer, tester, devFund] = await ethers.getSigners();
+        const _deployer = deployer;
+        const RarestNftfactory = (await ethers.getContractFactory('RarestNft', _deployer)) as RarestNft__factory;
+        rarestnft = (await upgrades.deployProxy(RarestNftfactory, [marketAddress, baseURI], {
+            kind: 'uups',
+        })) as RarestNft;
         await rarestnft.deployed();
     });
 
@@ -34,12 +37,11 @@ describe('RarestNft', async () => {
             royaltyRecipient,
             royaltyPercent,
         );
+
         const Id: any = await returnTokenID.wait();
         const tokenId: number = parseInt(Id.events[1].data, 16);
 
         //Return tokenId which should be equal to one
-        expect(tokenId).to.be.not.undefined;
-        expect(tokenId).to.be.not.null;
         expect(tokenId).to.equal(1);
 
         //Return balance must be equal to Amount

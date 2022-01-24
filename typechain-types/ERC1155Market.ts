@@ -58,8 +58,13 @@ export interface ERC1155MarketInterface extends utils.Interface {
     "fetchMarketItems()": FunctionFragment;
     "fetchMyNFTs(address)": FunctionFragment;
     "getListingPrice()": FunctionFragment;
+    "initialize(uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "owners(uint256,address)": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
+    "upgradeTo(address)": FunctionFragment;
+    "upgradeToAndCall(address,bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -87,10 +92,27 @@ export interface ERC1155MarketInterface extends utils.Interface {
     functionFragment: "getListingPrice",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "owners",
     values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [string]
+  ): string;
+  encodeFunctionData(functionFragment: "upgradeTo", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [string, BytesLike]
   ): string;
 
   decodeFunctionResult(functionFragment: "buy", data: BytesLike): Result;
@@ -118,21 +140,54 @@ export interface ERC1155MarketInterface extends utils.Interface {
     functionFragment: "getListingPrice",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owners", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
 
   events: {
+    "AdminChanged(address,address)": EventFragment;
+    "BeaconUpgraded(address)": EventFragment;
     "ListingBuy(uint256,address,uint256,uint256,address,address)": EventFragment;
     "ListingCancelled(uint256,uint256)": EventFragment;
     "ListingCreated(uint256,address,uint256,uint256,address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "RoyaltyPaid(address,uint256)": EventFragment;
+    "Upgraded(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ListingBuy"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ListingCancelled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ListingCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoyaltyPaid"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
+
+export type AdminChangedEvent = TypedEvent<
+  [string, string],
+  { previousAdmin: string; newAdmin: string }
+>;
+
+export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
+
+export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
+
+export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export type ListingBuyEvent = TypedEvent<
   [BigNumber, string, BigNumber, BigNumber, string, string],
@@ -170,12 +225,24 @@ export type ListingCreatedEvent = TypedEvent<
 
 export type ListingCreatedEventFilter = TypedEventFilter<ListingCreatedEvent>;
 
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  { previousOwner: string; newOwner: string }
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
+
 export type RoyaltyPaidEvent = TypedEvent<
   [string, BigNumber],
   { receiver: string; amount: BigNumber }
 >;
 
 export type RoyaltyPaidEventFilter = TypedEventFilter<RoyaltyPaidEvent>;
+
+export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
+
+export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
 export interface ERC1155Market extends BaseContract {
   contractName: "ERC1155Market";
@@ -242,6 +309,12 @@ export interface ERC1155Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    initialize(
+      _listinprice: BigNumberish,
+      _maxRoyaltiesBasisPoints: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     owners(
@@ -249,6 +322,26 @@ export interface ERC1155Market extends BaseContract {
       arg1: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   buy(
@@ -288,6 +381,12 @@ export interface ERC1155Market extends BaseContract {
 
   getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+  initialize(
+    _listinprice: BigNumberish,
+    _maxRoyaltiesBasisPoints: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   owners(
@@ -295,6 +394,26 @@ export interface ERC1155Market extends BaseContract {
     arg1: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeTo(
+    newImplementation: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeToAndCall(
+    newImplementation: string,
+    data: BytesLike,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     buy(
@@ -334,6 +453,12 @@ export interface ERC1155Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    initialize(
+      _listinprice: BigNumberish,
+      _maxRoyaltiesBasisPoints: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     owners(
@@ -341,9 +466,41 @@ export interface ERC1155Market extends BaseContract {
       arg1: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
+    "AdminChanged(address,address)"(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+    AdminChanged(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+
+    "BeaconUpgraded(address)"(
+      beacon?: string | null
+    ): BeaconUpgradedEventFilter;
+    BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
+
     "ListingBuy(uint256,address,uint256,uint256,address,address)"(
       itemId?: BigNumberish | null,
       nftContract?: string | null,
@@ -387,6 +544,15 @@ export interface ERC1155Market extends BaseContract {
       price?: null
     ): ListingCreatedEventFilter;
 
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+
     "RoyaltyPaid(address,uint256)"(
       receiver?: string | null,
       amount?: BigNumberish | null
@@ -395,6 +561,9 @@ export interface ERC1155Market extends BaseContract {
       receiver?: string | null,
       amount?: BigNumberish | null
     ): RoyaltyPaidEventFilter;
+
+    "Upgraded(address)"(implementation?: string | null): UpgradedEventFilter;
+    Upgraded(implementation?: string | null): UpgradedEventFilter;
   };
 
   estimateGas: {
@@ -430,12 +599,38 @@ export interface ERC1155Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    initialize(
+      _listinprice: BigNumberish,
+      _maxRoyaltiesBasisPoints: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     owners(
       arg0: BigNumberish,
       arg1: string,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
@@ -475,12 +670,38 @@ export interface ERC1155Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    initialize(
+      _listinprice: BigNumberish,
+      _maxRoyaltiesBasisPoints: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owners(
       arg0: BigNumberish,
       arg1: string,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

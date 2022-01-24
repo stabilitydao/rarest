@@ -1,27 +1,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./ERC2981Royalties.sol";
 
-contract RarestNft is ERC1155, ERC2981Royalties {
-    using Counters for Counters.Counter;
+contract RarestNft is Initializable, ERC1155Upgradeable, ERC2981Royalties, OwnableUpgradeable, UUPSUpgradeable {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
     //TokenId of every NFT
-    Counters.Counter private _tokenIds;
+    CountersUpgradeable.Counter private _tokenIds;
 
     //NFT marketplace address should be approved
     address public marketAddress;
 
     //IPFS gateway
-    string public baseURI = "https://gateway.pinata.cloud/ipfs/";
+    string public baseURI;
+    //= "https://gateway.pinata.cloud/ipfs/";
     mapping(uint256 => string) private _hashes;
 
     //Provide marketplace
-    constructor(address marketAddress_) ERC1155("") {
+    function initialize(address marketAddress_, string memory baseURI_) public initializer {
+        __ERC1155_init("");
+        __Ownable_init();
         marketAddress = marketAddress_;
+        baseURI = baseURI_;
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     function createNFT(
         address recipient,

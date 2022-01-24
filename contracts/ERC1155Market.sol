@@ -1,22 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "hardhat/console.sol";
 import "./IRarestNft.sol";
 
-contract ERC1155Market is ReentrancyGuard {
-    using Counters for Counters.Counter;
-    Counters.Counter private _itemIds;
-    Counters.Counter private _itemsSold;
-    Counters.Counter private _itemsCancelled;
-    address payable public owner;
-    uint256 internal listingPrice = 0.025 ether;
+contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgradeable, OwnableUpgradeable {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _itemIds;
+    CountersUpgradeable.Counter private _itemsSold;
+    CountersUpgradeable.Counter private _itemsCancelled;
+    uint256 internal listingPrice;
+    uint256 maxRoyaltiesBasisPoints;
 
-    constructor() {
-        owner = payable(msg.sender);
+    function initialize(uint256 _listinprice, uint256 _maxRoyaltiesBasisPoints) public initializer {
+        listingPrice = _listinprice;
+        maxRoyaltiesBasisPoints = _maxRoyaltiesBasisPoints;
+        __Ownable_init();
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     enum MarketItemStatus {
         Active,
@@ -131,7 +138,7 @@ contract ERC1155Market is ReentrancyGuard {
         if (idToMarketItem_.quantity == 0) {
             idToMarketItem_.status = MarketItemStatus.Sold;
             _itemsSold.increment();
-            payable(owner).transfer(listingPrice);
+            payable(owner()).transfer(listingPrice);
         }
         emit ListingBuy(itemId, nftContract, tokenId, quantity_, idToMarketItem_.seller, msg.sender);
     }
@@ -147,8 +154,6 @@ contract ERC1155Market is ReentrancyGuard {
         }
         return (receiver, royaltyAmount);
     }
-
-    uint256 maxRoyaltiesBasisPoints = 4000;
 
     function cancelMarketItem(uint256 itemId, uint256 quantity_) external nonReentrant {
         MarketItem storage idToMarketItem_ = idToMarketItem[itemId];

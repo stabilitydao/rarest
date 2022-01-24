@@ -17,8 +17,9 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface ERC1155Interface extends utils.Interface {
-  contractName: "ERC1155";
+export interface IERC1155MetadataURIUpgradeableInterface
+  extends utils.Interface {
+  contractName: "IERC1155MetadataURIUpgradeable";
   functions: {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
@@ -140,13 +141,13 @@ export type URIEvent = TypedEvent<
 
 export type URIEventFilter = TypedEventFilter<URIEvent>;
 
-export interface ERC1155 extends BaseContract {
-  contractName: "ERC1155";
+export interface IERC1155MetadataURIUpgradeable extends BaseContract {
+  contractName: "IERC1155MetadataURIUpgradeable";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ERC1155Interface;
+  interface: IERC1155MetadataURIUpgradeableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -215,7 +216,7 @@ export interface ERC1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    uri(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
   balanceOf(
@@ -265,7 +266,7 @@ export interface ERC1155 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     balanceOf(
@@ -315,7 +316,7 @@ export interface ERC1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -415,7 +416,7 @@ export interface ERC1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    uri(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -467,7 +468,7 @@ export interface ERC1155 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     uri(
-      arg0: BigNumberish,
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

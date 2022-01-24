@@ -17,8 +17,8 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface IERC1155MetadataURIInterface extends utils.Interface {
-  contractName: "IERC1155MetadataURI";
+export interface IERC1155UpgradeableInterface extends utils.Interface {
+  contractName: "IERC1155Upgradeable";
   functions: {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
@@ -27,7 +27,6 @@ export interface IERC1155MetadataURIInterface extends utils.Interface {
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "uri(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -58,7 +57,6 @@ export interface IERC1155MetadataURIInterface extends utils.Interface {
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
 
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -85,7 +83,6 @@ export interface IERC1155MetadataURIInterface extends utils.Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "uri", data: BytesLike): Result;
 
   events: {
     "ApprovalForAll(address,address,bool)": EventFragment;
@@ -140,13 +137,13 @@ export type URIEvent = TypedEvent<
 
 export type URIEventFilter = TypedEventFilter<URIEvent>;
 
-export interface IERC1155MetadataURI extends BaseContract {
-  contractName: "IERC1155MetadataURI";
+export interface IERC1155Upgradeable extends BaseContract {
+  contractName: "IERC1155Upgradeable";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IERC1155MetadataURIInterface;
+  interface: IERC1155UpgradeableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -214,8 +211,6 @@ export interface IERC1155MetadataURI extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    uri(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
   balanceOf(
@@ -265,8 +260,6 @@ export interface IERC1155MetadataURI extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     balanceOf(
       account: string,
@@ -314,8 +307,6 @@ export interface IERC1155MetadataURI extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -414,8 +405,6 @@ export interface IERC1155MetadataURI extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    uri(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -463,11 +452,6 @@ export interface IERC1155MetadataURI extends BaseContract {
 
     supportsInterface(
       interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    uri(
-      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

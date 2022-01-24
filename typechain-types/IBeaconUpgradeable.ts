@@ -14,32 +14,32 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface ERC165Interface extends utils.Interface {
-  contractName: "ERC165";
+export interface IBeaconUpgradeableInterface extends utils.Interface {
+  contractName: "IBeaconUpgradeable";
   functions: {
-    "supportsInterface(bytes4)": FunctionFragment;
+    "implementation()": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
+    functionFragment: "implementation",
+    values?: undefined
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "supportsInterface",
+    functionFragment: "implementation",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export interface ERC165 extends BaseContract {
-  contractName: "ERC165";
+export interface IBeaconUpgradeable extends BaseContract {
+  contractName: "IBeaconUpgradeable";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ERC165Interface;
+  interface: IBeaconUpgradeableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -61,37 +61,22 @@ export interface ERC165 extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    implementation(overrides?: CallOverrides): Promise<[string]>;
   };
 
-  supportsInterface(
-    interfaceId: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  implementation(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    implementation(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    implementation(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    implementation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

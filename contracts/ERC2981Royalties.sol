@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
-import '@openzeppelin/contracts/interfaces/IERC2981.sol';
 
-abstract contract ERC2981Royalties is IERC2981 {
+import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
+
+abstract contract ERC2981Royalties is IERC2981Upgradeable {
     struct Royalty {
         address recipient;
         uint256 value; // as a % unit, from 0 - 10000 (2 extra 0s) for eg 25% is 2500
@@ -15,7 +16,7 @@ abstract contract ERC2981Royalties is IERC2981 {
         address recipient,
         uint256 value
     ) internal {
-        require(value <= 100_00, 'ERC2981Royalties: value too high');
+        require(value <= 100_00, "ERC2981Royalties: value too high");
         _royalties[id] = Royalty(recipient, value);
     }
 

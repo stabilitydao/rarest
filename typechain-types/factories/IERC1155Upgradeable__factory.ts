@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IERC1155, IERC1155Interface } from "../IERC1155";
+import type {
+  IERC1155Upgradeable,
+  IERC1155UpgradeableInterface,
+} from "../IERC1155Upgradeable";
 
 const _abi = [
   {
@@ -302,15 +305,15 @@ const _abi = [
   },
 ];
 
-export class IERC1155__factory {
+export class IERC1155Upgradeable__factory {
   static readonly abi = _abi;
-  static createInterface(): IERC1155Interface {
-    return new utils.Interface(_abi) as IERC1155Interface;
+  static createInterface(): IERC1155UpgradeableInterface {
+    return new utils.Interface(_abi) as IERC1155UpgradeableInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IERC1155 {
-    return new Contract(address, _abi, signerOrProvider) as IERC1155;
+  ): IERC1155Upgradeable {
+    return new Contract(address, _abi, signerOrProvider) as IERC1155Upgradeable;
   }
 }

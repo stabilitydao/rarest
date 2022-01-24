@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  IERC1155Receiver,
-  IERC1155ReceiverInterface,
-} from "../IERC1155Receiver";
+  IERC1155ReceiverUpgradeable,
+  IERC1155ReceiverUpgradeableInterface,
+} from "../IERC1155ReceiverUpgradeable";
 
 const _abi = [
   {
@@ -109,15 +109,19 @@ const _abi = [
   },
 ];
 
-export class IERC1155Receiver__factory {
+export class IERC1155ReceiverUpgradeable__factory {
   static readonly abi = _abi;
-  static createInterface(): IERC1155ReceiverInterface {
-    return new utils.Interface(_abi) as IERC1155ReceiverInterface;
+  static createInterface(): IERC1155ReceiverUpgradeableInterface {
+    return new utils.Interface(_abi) as IERC1155ReceiverUpgradeableInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IERC1155Receiver {
-    return new Contract(address, _abi, signerOrProvider) as IERC1155Receiver;
+  ): IERC1155ReceiverUpgradeable {
+    return new Contract(
+      address,
+      _abi,
+      signerOrProvider
+    ) as IERC1155ReceiverUpgradeable;
   }
 }
