@@ -1,15 +1,6 @@
 <div align="center">
 <h1>Rarest</h1>
 </div>
-<p align="center">
-  <a href="https://github.com/stabilitydao/core/actions/workflows/tests.yml?query=branch%3Amain"><img src="https://github.com/stabilitydao/core/actions/workflows/tests.yml/badge.svg?branch=main" /></a>
-  <a href="https://github.com/stabilitydao/core/actions/workflows/lint.yml?query=branch%3Amain"><img src="https://github.com/stabilitydao/core/actions/workflows/lint.yml/badge.svg?branch=main" /></a>
-  <a href="https://app.codecov.io/gh/stabilitydao/core"><img src="https://codecov.io/gh/stabilitydao/core/branch/main/graph/badge.svg?token=EO6E2Z0Y5Z" /></a>
-<a href="https://github.com/stabilitydao/core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/stabilitydao/core?style=flat" /></a>
-</p>
-<p align="center">
-<b>Source code of smart contracts for Stability protocol</b> 
-</p>
 
 ## What is Rarest?
 
