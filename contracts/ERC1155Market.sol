@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "hardhat/console.sol";
-import "./IRarestNft.sol";
+import "./interfaces/IRarestNft.sol";
 
 contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgradeable, OwnableUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -31,6 +31,11 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         Cancelled
     }
 
+    enum ItemType {
+        Fixed,
+        Auction
+    }
+
     struct MarketItem {
         uint256 itemId;
         address nftContract;
@@ -38,8 +43,16 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         uint256 quantity;
         address seller;
         uint256 price;
+        ItemType itemtype;
         MarketItemStatus status;
     }
+
+    struct Bid {
+        uint256 price; //Bid Amount
+        address bidder;
+    }
+
+    mapping(uint256 => Bid) private bids;
 
     //mapping(tokenId => mapping(owner => quantity))
     mapping(uint256 => mapping(address => uint256)) public owners;
@@ -76,7 +89,8 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         address nftContract,
         uint256 tokenId,
         uint256 quantity_,
-        uint256 price // Price of one Item
+        uint256 price, // Price of one Item
+        uint8 itemtype
     ) external payable nonReentrant {
         require(nftContract != address(0), "Address should not be zero");
         require(tokenId != 0, "tokenId should not be zero");
@@ -84,7 +98,10 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         require(quantity_ > 0, "quantity must be greater than 0");
         require(IRarestNft(nftContract).balanceOf(msg.sender, tokenId) >= quantity_, "Seller must own it.");
         require(msg.value == listingPrice, "Should be equal to listingPrice");
-
+        require(itemtype == uint8(ItemType.Auction) || itemtype == uint8(ItemType.Auction), "item type not specify");
+        if (itemtype == uint8(ItemType.Auction)) {
+            require(quantity_ == 1, "quantity should be one");
+        }
         _itemIds.increment();
 
         uint256 itemId = _itemIds.current();
@@ -96,9 +113,52 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
             quantity_,
             payable(msg.sender),
             price,
+            ItemType(itemtype),
             MarketItemStatus.Active
         );
         emit ListingCreated(itemId, nftContract, tokenId, quantity_, msg.sender, price);
+    }
+
+    function makeBid(
+        address nftContract,
+        uint256 itemId,
+        uint256 quantity_
+    ) public payable nonReentrant {
+        require(msg.value > bids[itemId].price, "Amount is less");
+        require(msg.sender != bids[itemId].bidder, "Can't bid again and again");
+        require(nftContract != address(0), "COntract SHould not be zero");
+        require(quantity_ == 1, "Amount must not be zero");
+        MarketItem storage idToMarketItem_ = idToMarketItem[itemId];
+        require(msg.sender != idToMarketItem_.seller, "Seller can't be buyer");
+        require(idToMarketItem_.status == MarketItemStatus.Active, "Listing Not Active");
+        if (msg.value >= idToMarketItem_.price) {
+            payable(bids[itemId].bidder).transfer(bids[itemId].price);
+            (address royaltyReceiver, uint256 royaltyAmount) = getRoyalties(
+                idToMarketItem_.nftContract,
+                idToMarketItem_.tokenId,
+                msg.value
+            );
+            if (royaltyAmount > 0) {
+                payable(royaltyReceiver).transfer(royaltyAmount);
+                emit RoyaltyPaid(royaltyReceiver, royaltyAmount);
+            }
+            payable(idToMarketItem_.seller).transfer(msg.value - royaltyAmount);
+
+            IRarestNft(nftContract).safeTransferFrom(
+                idToMarketItem_.seller,
+                msg.sender,
+                idToMarketItem_.tokenId,
+                quantity_,
+                ""
+            );
+        } else {
+            if (bids[itemId].price != 0) {
+                payable(bids[itemId].bidder).transfer(bids[itemId].price);
+                bids[itemId] = Bid(msg.value, msg.sender);
+            } else {
+                bids[itemId] = Bid(msg.value, msg.sender);
+            }
+        }
     }
 
     function buy(
