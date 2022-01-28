@@ -90,7 +90,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         uint256 tokenId,
         uint256 quantity_,
         uint256 price, // Price of one Item
-        uint8 itemtype
+        uint256 itemtype
     ) external payable nonReentrant {
         require(nftContract != address(0), "Address should not be zero");
         require(tokenId != 0, "tokenId should not be zero");
@@ -98,8 +98,8 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         require(quantity_ > 0, "quantity must be greater than 0");
         require(IRarestNft(nftContract).balanceOf(msg.sender, tokenId) >= quantity_, "Seller must own it.");
         require(msg.value == listingPrice, "Should be equal to listingPrice");
-        require(itemtype == uint8(ItemType.Auction) || itemtype == uint8(ItemType.Auction), "item type not specify");
-        if (itemtype == uint8(ItemType.Auction)) {
+        require(itemtype == 0 || itemtype == 1, "item type not specify");
+        if (itemtype == 1) {
             require(quantity_ == 1, "quantity should be one");
         }
         _itemIds.increment();
@@ -143,7 +143,6 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
                 emit RoyaltyPaid(royaltyReceiver, royaltyAmount);
             }
             payable(idToMarketItem_.seller).transfer(msg.value - royaltyAmount);
-
             IRarestNft(nftContract).safeTransferFrom(
                 idToMarketItem_.seller,
                 msg.sender,
@@ -151,6 +150,13 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
                 quantity_,
                 ""
             );
+            owners[itemId][msg.sender] = quantity_;
+            idToMarketItem_.quantity = idToMarketItem_.quantity - quantity_;
+            if (idToMarketItem_.quantity == 0) {
+                idToMarketItem_.status = MarketItemStatus.Sold;
+                _itemsSold.increment();
+                payable(owner()).transfer(listingPrice);
+            }
         } else {
             if (bids[itemId].price != 0) {
                 payable(bids[itemId].bidder).transfer(bids[itemId].price);
