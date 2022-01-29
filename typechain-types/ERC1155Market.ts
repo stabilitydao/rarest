@@ -26,6 +26,8 @@ export declare namespace ERC1155Market {
     quantity: BigNumberish;
     seller: string;
     price: BigNumberish;
+    itemtype: BigNumberish;
+    time: BigNumberish;
     status: BigNumberish;
   };
 
@@ -36,6 +38,8 @@ export declare namespace ERC1155Market {
     BigNumber,
     string,
     BigNumber,
+    number,
+    BigNumber,
     number
   ] & {
     itemId: BigNumber;
@@ -44,6 +48,8 @@ export declare namespace ERC1155Market {
     quantity: BigNumber;
     seller: string;
     price: BigNumber;
+    itemtype: number;
+    time: BigNumber;
     status: number;
   };
 }
@@ -53,14 +59,16 @@ export interface ERC1155MarketInterface extends utils.Interface {
   functions: {
     "buy(address,uint256,uint256)": FunctionFragment;
     "cancelMarketItem(uint256,uint256)": FunctionFragment;
-    "createMarketItem(address,uint256,uint256,uint256)": FunctionFragment;
+    "createMarketItem(address,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "fetchItemsCreated(address)": FunctionFragment;
     "fetchMarketItems()": FunctionFragment;
     "fetchMyNFTs(address)": FunctionFragment;
     "getListingPrice()": FunctionFragment;
     "initialize(uint256,uint256)": FunctionFragment;
+    "makeBid(address,uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "owners(uint256,address)": FunctionFragment;
+    "removeBid(uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
@@ -77,7 +85,14 @@ export interface ERC1155MarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createMarketItem",
-    values: [string, BigNumberish, BigNumberish, BigNumberish]
+    values: [
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "fetchItemsCreated",
@@ -96,10 +111,18 @@ export interface ERC1155MarketInterface extends utils.Interface {
     functionFragment: "initialize",
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "makeBid",
+    values: [string, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "owners",
     values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeBid",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -141,8 +164,10 @@ export interface ERC1155MarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "makeBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owners", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -290,6 +315,8 @@ export interface ERC1155Market extends BaseContract {
       tokenId: BigNumberish,
       quantity_: BigNumberish,
       price: BigNumberish,
+      itemtype: BigNumberish,
+      time: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -315,6 +342,13 @@ export interface ERC1155Market extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    makeBid(
+      nftContract: string,
+      itemId: BigNumberish,
+      quantity_: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     owners(
@@ -322,6 +356,11 @@ export interface ERC1155Market extends BaseContract {
       arg1: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    removeBid(
+      itemId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -362,6 +401,8 @@ export interface ERC1155Market extends BaseContract {
     tokenId: BigNumberish,
     quantity_: BigNumberish,
     price: BigNumberish,
+    itemtype: BigNumberish,
+    time: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -387,6 +428,13 @@ export interface ERC1155Market extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  makeBid(
+    nftContract: string,
+    itemId: BigNumberish,
+    quantity_: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   owners(
@@ -394,6 +442,11 @@ export interface ERC1155Market extends BaseContract {
     arg1: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  removeBid(
+    itemId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -434,6 +487,8 @@ export interface ERC1155Market extends BaseContract {
       tokenId: BigNumberish,
       quantity_: BigNumberish,
       price: BigNumberish,
+      itemtype: BigNumberish,
+      time: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -459,6 +514,13 @@ export interface ERC1155Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    makeBid(
+      nftContract: string,
+      itemId: BigNumberish,
+      quantity_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     owners(
@@ -466,6 +528,8 @@ export interface ERC1155Market extends BaseContract {
       arg1: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    removeBid(itemId: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -585,6 +649,8 @@ export interface ERC1155Market extends BaseContract {
       tokenId: BigNumberish,
       quantity_: BigNumberish,
       price: BigNumberish,
+      itemtype: BigNumberish,
+      time: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -605,12 +671,24 @@ export interface ERC1155Market extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    makeBid(
+      nftContract: string,
+      itemId: BigNumberish,
+      quantity_: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     owners(
       arg0: BigNumberish,
       arg1: string,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    removeBid(
+      itemId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     renounceOwnership(
@@ -653,6 +731,8 @@ export interface ERC1155Market extends BaseContract {
       tokenId: BigNumberish,
       quantity_: BigNumberish,
       price: BigNumberish,
+      itemtype: BigNumberish,
+      time: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -676,12 +756,24 @@ export interface ERC1155Market extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    makeBid(
+      nftContract: string,
+      itemId: BigNumberish,
+      quantity_: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owners(
       arg0: BigNumberish,
       arg1: string,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    removeBid(
+      itemId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(

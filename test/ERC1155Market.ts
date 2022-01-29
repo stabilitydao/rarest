@@ -1,6 +1,7 @@
-import {expect} from 'chai';
+import chai from 'chai';
 import {ethers, upgrades} from 'hardhat';
 import {ERC1155Market, RarestNft, ERC1155Market__factory, RarestNft__factory} from '../typechain-types';
+const {expect} = chai;
 describe('RarestNft', async () => {
     let erc1155market: ERC1155Market;
     let rarestnft: RarestNft;
@@ -59,9 +60,9 @@ describe('RarestNft', async () => {
         const Id: any = await returnTokenID.wait();
         const tokenId: number = parseInt(Id.events[1].data, 16);
         const price: string = '1000000000000000000';
-
+        const type: number = 0;
         //Item Listing
-        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, {
+        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, type, 0, {
             value: ethers.utils.parseUnits('0.025', 'ether'),
         });
 
@@ -91,13 +92,13 @@ describe('RarestNft', async () => {
         const Id: any = await returnTokenID.wait();
         const tokenId: number = parseInt(Id.events[1].data, 16);
         const price: string = '1000000000000000000';
-
+        const type: number = 0;
         //Item Listing
-        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, {
+        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, type, 0, {
             value: ethers.utils.parseUnits('0.025', 'ether'),
         });
 
-        //Buy Item
+        // Buy Item
         const [_, buyer] = await ethers.getSigners();
         // item will be one becouse we are creating one item only
         const itemid: number = 1;
@@ -105,7 +106,7 @@ describe('RarestNft', async () => {
             value: ethers.utils.parseUnits('20', 'ether'),
         });
 
-        //Fetch purchsed items
+        //Fetch purchased items
         const ownedItems = await erc1155market.connect(buyer).fetchMyNFTs(sender);
         //Item should not be undefined and null
         expect(ownedItems).to.be.not.undefined;
@@ -130,9 +131,9 @@ describe('RarestNft', async () => {
         const Id: any = await returnTokenID.wait();
         const tokenId: number = parseInt(Id.events[1].data, 16);
         const price: string = '1000000000000000000';
-
+        const type: number = 0;
         //Item Listing
-        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, {
+        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, type, 0, {
             value: ethers.utils.parseUnits('0.025', 'ether'),
         });
 
@@ -146,5 +147,104 @@ describe('RarestNft', async () => {
         const marketitem = await erc1155market.fetchMarketItems();
         const leftitem: number = marketitem[1].quantity.toNumber();
         expect(leftitem).to.be.equal(10); // Left item must be 10 becouse we cancelled 10 items
+    });
+
+    it("Creating adding Bid and adding higher bid then checking it's working or not", async () => {
+        let [recipient, sender, sender1]: string[] = await ethers.provider.listAccounts();
+        let amount: number = 1;
+        let hash: string = '0xRajkumar';
+        let data: string = '0x10';
+        let royaltyRecipient: string = recipient;
+        let royaltyPercent: number = 10;
+        const returnTokenID = await rarestnft.createNFT(
+            recipient,
+            amount,
+            hash,
+            data,
+            royaltyRecipient,
+            royaltyPercent,
+        );
+
+        const Id: any = await returnTokenID.wait();
+        const tokenId: number = parseInt(Id.events[1].data, 16);
+        const price: string = '1000000000000000000';
+        const type: number = 1;
+        //Item Listing
+        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, type, 3600, {
+            value: ethers.utils.parseUnits('0.025', 'ether'),
+        });
+
+        //ItemType should be one
+        const items = await erc1155market.fetchItemsCreated(recipient);
+        const itemtype = items[3].itemtype;
+        expect(itemtype).to.be.equal(1);
+
+        // Making first Bid with less amount
+        let itemId: number = 4;
+        let firstBid: string = '0.9';
+        let quantity: number = 1;
+        const [_, buyer1, buyer2] = await ethers.getSigners();
+        await erc1155market.connect(buyer1).makeBid(rarestAddress, itemId, quantity, {
+            value: ethers.utils.parseUnits(firstBid, 'ether'),
+        });
+
+        // making second BID iwth higher amount
+        let secondBid: string = '1.1';
+        await erc1155market.connect(buyer2).makeBid(rarestAddress, itemId, quantity, {
+            value: ethers.utils.parseUnits(secondBid, 'ether'),
+        });
+
+        // Fetch purchased items
+        //quantity should be one
+        const purchasedauction = await erc1155market.connect(buyer2).fetchMyNFTs(sender1);
+        const purchasedquantity = purchasedauction[1].toString();
+        expect(purchasedquantity).to.be.equal('1');
+    });
+
+    it('Creating and removing BID', async () => {
+        let [recipient, sender]: string[] = await ethers.provider.listAccounts();
+        let amount: number = 1;
+        let hash: string = '0xRajkumar';
+        let data: string = '0x10';
+        let royaltyRecipient: string = recipient;
+        let royaltyPercent: number = 10;
+        const returnTokenID = await rarestnft.createNFT(
+            recipient,
+            amount,
+            hash,
+            data,
+            royaltyRecipient,
+            royaltyPercent,
+        );
+
+        const Id: any = await returnTokenID.wait();
+        const tokenId: number = parseInt(Id.events[1].data, 16);
+        const price: string = '1000000000000000000';
+        const type: number = 1;
+        //Item Listing
+        await erc1155market.createMarketItem(rarestAddress, tokenId, amount, price, type, 3600, {
+            value: ethers.utils.parseUnits('0.025', 'ether'),
+        });
+
+        // Making first Bid with less amount
+        let itemId: number = 5;
+        let firstBid: string = '0.9';
+        let quantity: number = 1;
+        const [_, buyer1] = await ethers.getSigners();
+        await erc1155market.connect(buyer1).makeBid(rarestAddress, itemId, quantity, {
+            value: ethers.utils.parseUnits(firstBid, 'ether'),
+        });
+
+        //previous balance before making Bid
+        const preBalance = await ethers.provider.getBalance(sender);
+
+        //Remove Bid
+        await erc1155market.connect(buyer1).removeBid(itemId);
+
+        //balance after removing bid
+        const aftBalance = await ethers.provider.getBalance(sender);
+
+        //Balance after removing bid should be more
+        console.log(preBalance, aftBalance);
     });
 });
