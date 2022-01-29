@@ -44,6 +44,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         address seller;
         uint256 price;
         ItemType itemtype;
+        uint256 time;
         MarketItemStatus status;
     }
 
@@ -84,22 +85,26 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
     );
 
     event RoyaltyPaid(address indexed receiver, uint256 indexed amount);
+    modifier validAddress(address _addr) {
+        require(_addr != address(0), "Not valid address");
+        _;
+    }
 
     function createMarketItem(
         address nftContract,
         uint256 tokenId,
         uint256 quantity_,
         uint256 price, // Price of one Item
-        uint256 itemtype
-    ) external payable nonReentrant {
-        require(nftContract != address(0), "Address should not be zero");
+        uint256 itemtype,
+        uint256 time
+    ) external payable nonReentrant validAddress(nftContract) {
         require(tokenId != 0, "tokenId should not be zero");
         require(price > 0, "Price must be at least 1 wei");
         require(quantity_ > 0, "quantity must be greater than 0");
         require(IRarestNft(nftContract).balanceOf(msg.sender, tokenId) >= quantity_, "Seller must own it.");
         require(msg.value == listingPrice, "Should be equal to listingPrice");
         require(itemtype == 0 || itemtype == 1, "item type not specify");
-        if (itemtype == 1) {
+        if (itemtype == 1 && time > 0) {
             require(quantity_ == 1, "quantity should be one");
         }
         _itemIds.increment();
@@ -114,6 +119,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
             payable(msg.sender),
             price,
             ItemType(itemtype),
+            block.timestamp + time,
             MarketItemStatus.Active
         );
         emit ListingCreated(itemId, nftContract, tokenId, quantity_, msg.sender, price);
@@ -123,14 +129,15 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         address nftContract,
         uint256 itemId,
         uint256 quantity_
-    ) public payable nonReentrant {
+    ) public payable nonReentrant validAddress(nftContract) {
         require(msg.value > bids[itemId].price, "Amount is less");
         require(msg.sender != bids[itemId].bidder, "Can't bid again and again");
-        require(nftContract != address(0), "COntract SHould not be zero");
         require(quantity_ == 1, "Amount must not be zero");
         MarketItem storage idToMarketItem_ = idToMarketItem[itemId];
         require(msg.sender != idToMarketItem_.seller, "Seller can't be buyer");
         require(idToMarketItem_.status == MarketItemStatus.Active, "Listing Not Active");
+        require(idToMarketItem_.time > 0, "Time Should not be zero");
+        require(block.timestamp < idToMarketItem_.time, "Time Should not be zero");
         if (msg.value >= idToMarketItem_.price) {
             payable(bids[itemId].bidder).transfer(bids[itemId].price);
             (address royaltyReceiver, uint256 royaltyAmount) = getRoyalties(
@@ -171,8 +178,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         address nftContract,
         uint256 itemId,
         uint256 quantity_
-    ) external payable nonReentrant {
-        require(nftContract != address(0), "address should be provided");
+    ) external payable nonReentrant validAddress(nftContract) {
         MarketItem storage idToMarketItem_ = idToMarketItem[itemId];
         uint256 tokenId = idToMarketItem_.tokenId;
         require(quantity_ > 0, "Amount must not be zero");
@@ -189,6 +195,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
             totalPrice
         );
 
+        require(idToMarketItem_.time == 0, "Time must be zero");
         require(royaltyAmount <= totalPrice, "royalty amount too big");
 
         if (royaltyAmount > 0) {
@@ -231,9 +238,11 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         if (idToMarketItem_.quantity == 0) {
             _itemsCancelled.increment();
             idToMarketItem_.status = MarketItemStatus.Cancelled;
+            if (idToMarketItem_.itemtype == ItemType.Auction) {
+                payable(bids[itemId].bidder).transfer(bids[itemId].price);
+            }
             payable(idToMarketItem_.seller).transfer(listingPrice);
         }
-
         emit ListingCancelled(itemId, quantity_);
     }
 
