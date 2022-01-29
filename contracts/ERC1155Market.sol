@@ -228,6 +228,14 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
         return (receiver, royaltyAmount);
     }
 
+    function removeBid(uint256 itemId) external nonReentrant {
+        MarketItem storage idToMarketItem_ = idToMarketItem[itemId];
+        require(msg.sender == bids[itemId].bidder, "Only bidder can Cancel");
+        require(idToMarketItem_.status == MarketItemStatus.Active, "Item must be active");
+        payable(bids[itemId].bidder).transfer(bids[itemId].price);
+        delete bids[itemId];
+    }
+
     function cancelMarketItem(uint256 itemId, uint256 quantity_) external nonReentrant {
         MarketItem storage idToMarketItem_ = idToMarketItem[itemId];
         require(msg.sender == idToMarketItem_.seller, "Only Seller can Cancel");
