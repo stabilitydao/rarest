@@ -85,6 +85,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
     );
 
     event RoyaltyPaid(address indexed receiver, uint256 indexed amount);
+    event BidAdded(uint256 indexed itemId, address indexed bidder, uint256 indexed amount);
     modifier validAddress(address _addr) {
         require(_addr != address(0), "Not valid address");
         _;
@@ -172,6 +173,7 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
                 bids[itemId] = Bid(msg.value, msg.sender);
             }
         }
+        emit BidAdded(itemId, msg.sender, msg.value);
     }
 
     function buy(
@@ -195,7 +197,6 @@ contract ERC1155Market is Initializable, ReentrancyGuardUpgradeable, UUPSUpgrade
             totalPrice
         );
 
-        require(idToMarketItem_.time == 0, "Time must be zero");
         require(royaltyAmount <= totalPrice, "royalty amount too big");
 
         if (royaltyAmount > 0) {
